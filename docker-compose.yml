@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:8.2-alpine
+    ports:
+      - "6379:6379"
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+  backend:
+    build: ./backend
+    ports: 
+      - "3000:3000"
+    depends_on:
+      redis:
+        condition: service_healthy
+  java-worker:
+    build: ./java-worker/java-worker
+    depends_on:
+      redis:
+        condition: service_healthy
+  csharp-worker:
+    build: ./csharp-worker/csharp-worker
+    depends_on:
+      redis:
+        condition: service_healthy
